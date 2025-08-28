@@ -383,18 +383,18 @@ def get_results_from_multicast_soup(soup, hotel=False):
                 if not info_element:
                     continue
                 info_text = info_element.get_text(strip=True)
-                if "上线" in info_text and " " in info_text:
-                    date, region, channel_type = get_multicast_channel_info(info_text)
-                    if hotel and "酒店" not in region:
-                        continue
-                    results.append(
-                        {
-                            "url": url,
-                            "date": date,
-                            "region": region,
-                            "type": channel_type,
-                        }
-                    )
+            if "上线" in info_text and " " in info_text:
+                date, region, channel_type = get_multicast_channel_info(info_text)
+                if hotel and "酒店" not in region:
+                    continue
+                results.append(
+                    {
+                        "url": url,
+                        "date": date,
+                        "region": region,
+                        "type": channel_type,
+                    }
+                )
     return results
 
 
@@ -754,6 +754,7 @@ def append_total_data(
                     )
                     print(f"{method.capitalize()}:", len(name_results), end=", ")
             print_channel_number(data, cate, name)
+        )
 
 
 async def test_speed(data, ipv6=False, callback=None):
@@ -830,7 +831,7 @@ def sort_channel_result(channel_data, result=None, filter_host=False, ipv6_suppo
             channel_result[cate][name].extend(total_result)
             for item in total_result:
                 logger.info(
-                    f"Name: {name}, URL: {item.get('url')}, From: {item.get('origin')}, IPv_Type: {item.get("ipv_type")}, Location: {item.get('location')}, ISP: {item.get('isp')}, Date: {item["date"]}, Delay: {item.get('delay') or -1} ms, Speed: {item.get('speed') or 0:.2f} M/s, Resolution: {item.get('resolution')}"
+                    f"Name: {name}, URL: {item.get('url')}, From: {item.get('origin')}, IPv_Type: {item.get('ipv_type')}, Location: {item.get('location')}, ISP: {item.get('isp')}, Date: {item['date']}, Delay: {item.get('delay') or -1} ms, Speed: {item.get('speed') or 0:.2f} M/s, Resolution: {item.get('resolution')}"
                 )
     logger.handlers.clear()
     return channel_result
@@ -917,7 +918,7 @@ def process_write_content(
         update_time_item_url = update_time_item["url"]
         if open_url_info and update_time_item["extra_info"]:
             update_time_item_url = add_url_info(update_time_item_url, update_time_item["extra_info"])
-        value = f"{rtmp_url}{update_time_item["id"]}" if rtmp_url else update_time_item_url
+        value = f"{rtmp_url}{update_time_item['id']}" if rtmp_url else update_time_item_url
         if config.update_time_position == "top":
             content = f"🕘️更新时间,#genre#\n{now},{value}\n\n{content}"
         else:
