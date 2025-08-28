@@ -1,0 +1,43 @@
+﻿name: Sync result.txt to jnsj repository
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天UTC时间0点运行（北京时间8点）
+  workflow_dispatch:  # 允许手动触发
+  push:
+    paths:
+      - 'output/result.txt'   # 当result.txt文件发生变化时触发
+
+jobs:
+  sync-to-jnsj:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Clone jnsj repository
+        run: |
+          git clone https://${{ secrets.JNSJ_TOKEN }}@github.com/${{ secrets.JNSJ_REPOSITORY }}.git jnsj-repo
+
+      - name: Copy result.txt to jnsj repository
+        run: |
+          cp output/result.txt jnsj-repo/result.txt
+
+      - name: Commit and push to jnsj repository
+        run: |
+          cd jnsj-repo
+          git add result.txt
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update result.txt from $GITHUB_REPOSITORY - $(date +'%Y%m%d_%H%M%S')"
+            git pull origin main --rebase
+            git push origin main
+          fi
