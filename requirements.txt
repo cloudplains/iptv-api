@@ -3,6 +3,5 @@ beautifulsoup4==4.12.3
 pytz==2023.3
 tqdm==4.66.4
 asyncio
-gzip
 aiohttp
 pyyaml
