@@ -2,7 +2,7 @@
 
 on:
   schedule:
-    - cron: '0 20 * * *'  # 每天UTC时间20点运行（北京时间4点）
+    - cron: '0 0 * * *'  # 每天UTC时间0点运行（北京时间8点）
   workflow_dispatch:  # 允许手动触发
   push:
     paths:
@@ -17,6 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Debug - Print secrets status
+        run: |
+          echo "JNSJ_REPOSITORY is set: ${{ secrets.JNSJ_REPOSITORY != '' }}"
+          echo "JNSJ_TOKEN is set: ${{ secrets.JNSJ_TOKEN != '' }}"
+          if [ -n "${{ secrets.JNSJ_REPOSITORY }}" ]; then
+            echo "JNSJ_REPOSITORY value: ${{ secrets.JNSJ_REPOSITORY }}"
+          fi
+
       - name: Configure Git
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -24,10 +32,18 @@ jobs:
 
       - name: Clone jnsj repository
         run: |
+          if [ -z "${{ secrets.JNSJ_TOKEN }}" ] || [ -z "${{ secrets.JNSJ_REPOSITORY }}" ]; then
+            echo "Error: JNSJ_TOKEN or JNSJ_REPOSITORY is not set"
+            exit 1
+          fi
           git clone https://${{ secrets.JNSJ_TOKEN }}@github.com/${{ secrets.JNSJ_REPOSITORY }}.git jnsj-repo
 
       - name: Copy result.txt to jnsj repository
         run: |
+          if [ ! -f "output/result.txt" ]; then
+            echo "Error: output/result.txt does not exist"
+            exit 1
+          fi
           cp output/result.txt jnsj-repo/result.txt
 
       - name: Commit and push to jnsj repository
